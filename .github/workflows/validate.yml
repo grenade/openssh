@@ -28,7 +28,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: oqs-openssh
-          path: oqs-test/tmp
+          path: ${{ github.workspace }}/oqs-test/tmp
   test:
     needs: build
     runs-on: ubuntu-latest
@@ -39,7 +39,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: oqs-openssh
-          path: oqs-test/tmp
+          path: ${{ github.workspace }}/oqs-test/tmp
       -
         run: ls -ahl oqs-test/tmp
       -

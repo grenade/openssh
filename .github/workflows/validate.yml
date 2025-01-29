@@ -1,0 +1,49 @@
+name: validate
+on:
+  - push
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      -
+        run: sudo apt-get install -y autoconf automake cmake gcc libtool libssl-dev make ninja-build zlib1g-dev
+      -
+        uses: actions/checkout@v4
+      -
+        name: fetch liboqs
+        run: ./oqs-scripts/clone_liboqs.sh
+      -
+        name: build liboqs
+        run: ./oqs-scripts/build_liboqs.sh
+      -
+        name: build
+        env:
+          WITH_OPENSSL: true
+        run: ./oqs-scripts/build_openssh.sh
+      -
+        run: ls -ahl oqs-test/tmp
+      -
+        uses: actions/upload-artifact@v4
+        with:
+          name: oqs-openssh
+          path: oqs-test/tmp
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      -
+        uses: actions/checkout@v4
+      -
+        uses: actions/download-artifact@v4
+        with:
+          name: oqs-openssh
+          path: oqs-test/tmp
+      -
+        run: ls -ahl oqs-test/tmp
+      -
+        name: test
+        run: ./oqs-test/run_tests.sh
+      -
+        name: validate ssh and sshd syntax once for each algorithm
+        run: python3 oqs-test/try_connection.py doone

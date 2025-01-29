@@ -23,7 +23,7 @@ jobs:
           WITH_OPENSSL: true
         run: ./oqs-scripts/build_openssh.sh
       -
-        run: ls -ahl oqs-test/tmp
+        run: ls -ahl ${{ github.workspace }}/oqs-test/tmp
       -
         uses: actions/upload-artifact@v4
         with:

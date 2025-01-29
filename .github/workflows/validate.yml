@@ -22,7 +22,7 @@ jobs:
         run: |
           sudo mkdir -p -m 0755 /var/empty
           sudo groupadd sshd
-          sudo useradd -g sshd -c 'sshd privsep' -d /var/empty -s /bin/false sshd
+          id sshd || sudo c -g sshd -c 'sshd privsep' -d /var/empty -s /bin/false sshd
       -
         name: build
         env:

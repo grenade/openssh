@@ -41,7 +41,7 @@ jobs:
           name: oqs-openssh
           path: ${{ github.workspace }}/oqs-test/tmp
       -
-        run: ls -ahl oqs-test/tmp
+        run: ls -ahl ${{ github.workspace }}/oqs-test/tmp
       -
         name: test
         run: ./oqs-test/run_tests.sh

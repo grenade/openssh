@@ -17,9 +17,15 @@ jobs:
       -
         name: build liboqs
         run: ./oqs-scripts/build_liboqs.sh
+    - name: ssh environment
+      run: |
+        sudo mkdir -p -m 0755 /var/empty
+        sudo groupadd sshd
+        sudo useradd -g sshd -c 'sshd privsep' -d /var/empty -s /bin/false sshd
       -
         name: build
         env:
+          INSTALL_PREFIX: ${{ github.workspace }}/oqs-test/tmp
           WITH_OPENSSL: true
         run: ./oqs-scripts/build_openssh.sh
       -

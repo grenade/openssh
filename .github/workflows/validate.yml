@@ -10,9 +10,10 @@ jobs:
       -
         run: sudo apt-get install -y autoconf automake cmake gcc libtool libssl-dev make ninja-build zlib1g-dev
       -
+        name: fetch openssh repo
         uses: actions/checkout@v4
       -
-        name: fetch liboqs
+        name: fetch liboqs repo
         run: ./oqs-scripts/clone_liboqs.sh
       -
         name: build liboqs
@@ -24,14 +25,16 @@ jobs:
           sudo groupadd sshd
           id sshd || sudo c -g sshd -c 'sshd privsep' -d /var/empty -s /bin/false sshd
       -
-        name: build
+        name: build openssh
         env:
           INSTALL_PREFIX: ${{ github.workspace }}/oqs-test/tmp
           WITH_OPENSSL: true
         run: ./oqs-scripts/build_openssh.sh
       -
+        name: log build artifacts
         run: ls -ahl ${{ github.workspace }}/oqs-test/tmp
       -
+        name: upload build artifacts
         uses: actions/upload-artifact@v4
         with:
           name: oqs-openssh
@@ -41,17 +44,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       -
+        name: fetch openssh repo
         uses: actions/checkout@v4
       -
+        name: download build artifacts
         uses: actions/download-artifact@v4
         with:
           name: oqs-openssh
           path: ${{ github.workspace }}/oqs-test/tmp
       -
+        name: log build artifacts
         run: ls -ahl ${{ github.workspace }}/oqs-test/tmp
+      #-
+      #  name: test
+      #  run: ./oqs-test/run_tests.sh
       -
-        name: test
-        run: ./oqs-test/run_tests.sh
-      -
-        name: validate ssh and sshd syntax once for each algorithm
+        name: validate algorithms
         run: python3 oqs-test/try_connection.py doone

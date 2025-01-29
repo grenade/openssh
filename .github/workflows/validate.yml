@@ -30,6 +30,7 @@ jobs:
           name: oqs-openssh
           path: oqs-test/tmp
   test:
+    needs: build
     runs-on: ubuntu-latest
     steps:
       -

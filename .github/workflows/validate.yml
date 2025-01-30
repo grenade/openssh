@@ -48,7 +48,7 @@ jobs:
             ${{ github.workspace }}/config.h
             ${{ github.workspace }}/Makefile
             ${{ github.workspace }}/openbsd-compat/Makefile
-            ${{ github.workspace }}/oqs/include
+            ${{ github.workspace }}/oqs
   test:
     needs: build
     runs-on: ubuntu-latest

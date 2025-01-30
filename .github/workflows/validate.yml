@@ -37,28 +37,27 @@ jobs:
       -
         name: build openssh
         env:
-          #INSTALL_PREFIX: ${{ github.workspace }}/oqs-test/tmp
           WITH_OPENSSL: true
         run: ./oqs-scripts/build_openssh.sh
       -
         name: log build artifacts
-        run: ls -ahl ${GITHUB_WORKSPACE}/oqs-test/tmp
+        run: ls -ahl oqs-test/tmp
       -
         name: upload oqs-openssh
         uses: actions/upload-artifact@v4
         with:
           name: oqs-openssh
-          path: ${{ github.workspace }}/oqs-test/tmp
+          path: oqs-test/tmp
       -
         name: upload build-artifacts
         uses: actions/upload-artifact@v4
         with:
           name: build-artifacts
           path: |
-            ${{ github.workspace }}/config.h
-            ${{ github.workspace }}/Makefile
-            ${{ github.workspace }}/openbsd-compat/Makefile
-            ${{ github.workspace }}/oqs
+            config.h
+            Makefile
+            openbsd-compat/Makefile
+            oqs
   test:
     needs: build
     runs-on: ubuntu-latest
@@ -79,23 +78,22 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: oqs-openssh
-          path: ${{ github.workspace }}/oqs-test/tmp
+          path: oqs-test/tmp
       -
         name: download build-artifacts
         uses: actions/download-artifact@v4
         with:
           name: build-artifacts
-          path: ${{ github.workspace }}
       -
         name: log build artifacts
-        run: ls -ahl ${GITHUB_WORKSPACE}/oqs-test/tmp
+        run: ls -ahl oqs-test/tmp
       -
         name: test
-        run: ${GITHUB_WORKSPACE}/oqs-test/run_tests.sh
+        run: oqs-test/run_tests.sh
       -
         name: validate algorithms
         run: >
           python3 oqs-test/try_connection.py
-            --ssh ${GITHUB_WORKSPACE}/oqs-test/tmp/bin/ssh
-            --sshd ${GITHUB_WORKSPACE}/oqs-test/tmp/sbin/sshd
+            --ssh oqs-test/tmp/bin/ssh
+            --sshd oqs-test/tmp/sbin/sshd
             doone

@@ -34,11 +34,17 @@ jobs:
         name: log build artifacts
         run: ls -ahl ${{ github.workspace }}/oqs-test/tmp
       -
-        name: upload build artifacts
+        name: upload oqs-openssh
         uses: actions/upload-artifact@v4
         with:
           name: oqs-openssh
           path: ${{ github.workspace }}/oqs-test/tmp
+      -
+        name: upload makefile
+        uses: actions/upload-artifact@v4
+        with:
+          name: makefile
+          path: ${{ github.workspace }}/Makefile
   test:
     needs: build
     runs-on: ubuntu-latest
@@ -47,17 +53,27 @@ jobs:
         name: fetch openssh repo
         uses: actions/checkout@v4
       -
-        name: download build artifacts
+        name: download oqs-openssh
         uses: actions/download-artifact@v4
         with:
           name: oqs-openssh
           path: ${{ github.workspace }}/oqs-test/tmp
       -
+        name: download makefile
+        uses: actions/download-artifact@v4
+        with:
+          name: makefile
+          path: ${{ github.workspace }}/Makefile
+      -
         name: log build artifacts
         run: ls -ahl ${{ github.workspace }}/oqs-test/tmp
-      #-
-      #  name: test
-      #  run: ./oqs-test/run_tests.sh
+      -
+        name: test
+        run: ${{ github.workspace }}/oqs-test/run_tests.sh
       -
         name: validate algorithms
-        run: python3 oqs-test/try_connection.py doone
+        run: >
+          python3 oqs-test/try_connection.py
+            --ssh ${{ github.workspace }}/oqs-test/tmp/bin/ssh
+            --sshd ${{ github.workspace }}/oqs-test/tmp/sbin/sshd
+            doone

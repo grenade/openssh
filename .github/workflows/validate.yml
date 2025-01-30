@@ -46,6 +46,7 @@ jobs:
           name: build-artifacts
           path: |
             ${{ github.workspace }}/Makefile
+            ${{ github.workspace }}/openbsd-compat/Makefile
   test:
     needs: build
     runs-on: ubuntu-latest

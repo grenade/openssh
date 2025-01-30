@@ -92,8 +92,4 @@ jobs:
         run: oqs-test/run_tests.sh
       -
         name: validate algorithms
-        run: >
-          python3 oqs-test/try_connection.py
-            --ssh oqs-test/tmp/bin/ssh
-            --sshd oqs-test/tmp/sbin/sshd
-            doone
+        run: python3 oqs-test/try_connection.py --ssh oqs-test/tmp/bin/ssh --sshd oqs-test/tmp/sbin/sshd doone

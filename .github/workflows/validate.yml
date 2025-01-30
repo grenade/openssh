@@ -80,6 +80,12 @@ jobs:
           name: oqs-openssh
           path: oqs-test/tmp
       -
+        name: set executable permissions
+        run: |
+          for bin in oqs-test/tmp/{bin/{scp,sftp,ssh,ssh-add,ssh-agent,ssh-keygen,ssh-keyscan},sbin/sshd}; do
+            sudo chmod +x ${bin}
+          done
+      -
         name: download build-artifacts
         uses: actions/download-artifact@v4
         with:

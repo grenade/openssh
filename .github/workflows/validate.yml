@@ -20,12 +20,6 @@ jobs:
         name: build liboqs
         run: ./oqs-scripts/build_liboqs.sh
       -
-        name: ssh environment
-        run: |
-          sudo mkdir -p -m 0755 /var/empty
-          sudo groupadd sshd
-          id sshd || sudo c -g sshd -c 'sshd privsep' -d /var/empty -s /bin/false sshd
-      -
         name: build openssh
         env:
           INSTALL_PREFIX: ${{ github.workspace }}/oqs-test/tmp
@@ -79,14 +73,14 @@ jobs:
           path: ${{ github.workspace }}
       -
         name: log build artifacts
-        run: ls -ahl ${{ github.workspace }}/oqs-test/tmp
+        run: ls -ahl ${GITHUB_WORKSPACE}/oqs-test/tmp
       -
         name: test
-        run: ${{ github.workspace }}/oqs-test/run_tests.sh
+        run: ${GITHUB_WORKSPACE}/oqs-test/run_tests.sh
       -
         name: validate algorithms
         run: >
           python3 oqs-test/try_connection.py
-            --ssh ${{ github.workspace }}/oqs-test/tmp/bin/ssh
-            --sshd ${{ github.workspace }}/oqs-test/tmp/sbin/sshd
+            --ssh ${GITHUB_WORKSPACE}/oqs-test/tmp/bin/ssh
+            --sshd ${GITHUB_WORKSPACE}/oqs-test/tmp/sbin/sshd
             doone

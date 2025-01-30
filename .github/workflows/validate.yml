@@ -82,7 +82,7 @@ jobs:
       -
         name: set executable permissions
         run: |
-          for bin in oqs-test/tmp/{bin/{scp,sftp,ssh,ssh-add,ssh-agent,ssh-keygen,ssh-keyscan},sbin/sshd}; do
+          for bin in oqs-test/tmp/bin/* oqs-test/tmp/sbin/*; do
             sudo chmod +x ${bin}
           done
       -

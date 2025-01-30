@@ -8,6 +8,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       -
+        name: install build dependencies
         run: sudo apt-get install -y autoconf automake cmake gcc libtool libssl-dev make ninja-build zlib1g-dev
       -
         name: fetch openssh repo
@@ -52,7 +53,15 @@ jobs:
   test:
     needs: build
     runs-on: ubuntu-latest
+    container:
+      image: openquantumsafe/ci-ubuntu-focal-x86_64:latest
     steps:
+      -
+        name: ssh environment
+        run: |
+          mkdir -p -m 0755 /var/empty
+          groupadd sshd
+          useradd -g sshd -c 'sshd privsep' -d /var/empty -s /bin/false sshd
       -
         name: fetch openssh repo
         uses: actions/checkout@v4

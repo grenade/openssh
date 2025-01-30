@@ -45,6 +45,7 @@ jobs:
         with:
           name: build-artifacts
           path: |
+            ${{ github.workspace }}/config.h
             ${{ github.workspace }}/Makefile
             ${{ github.workspace }}/openbsd-compat/Makefile
   test:

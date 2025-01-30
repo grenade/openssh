@@ -40,11 +40,12 @@ jobs:
           name: oqs-openssh
           path: ${{ github.workspace }}/oqs-test/tmp
       -
-        name: upload makefile
+        name: upload build-artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: makefile
-          path: ${{ github.workspace }}/Makefile
+          name: build-artifacts
+          path: |
+            ${{ github.workspace }}/Makefile
   test:
     needs: build
     runs-on: ubuntu-latest
@@ -59,11 +60,11 @@ jobs:
           name: oqs-openssh
           path: ${{ github.workspace }}/oqs-test/tmp
       -
-        name: download makefile
+        name: download build-artifacts
         uses: actions/download-artifact@v4
         with:
-          name: makefile
-          path: ${{ github.workspace }}/Makefile
+          name: build-artifacts
+          path: ${{ github.workspace }}
       -
         name: log build artifacts
         run: ls -ahl ${{ github.workspace }}/oqs-test/tmp

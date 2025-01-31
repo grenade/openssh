@@ -42,59 +42,59 @@ jobs:
       -
         name: log build artifacts
         run: ls -ahl oqs-test/tmp
-      -
-        name: upload oqs-openssh
-        uses: actions/upload-artifact@v4
-        with:
-          name: oqs-openssh
-          path: oqs-test/tmp
-      -
-        name: upload build-artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: build-artifacts
-          path: |
-            config.h
-            Makefile
-            openbsd-compat/Makefile
-            oqs
-  test:
-    needs: build
-    runs-on: ubuntu-latest
-    container:
-      image: openquantumsafe/ci-ubuntu-focal-x86_64:latest
-      ports:
-        - 4242:4242
-    steps:
-      -
-        name: ssh environment
-        run: |
-          mkdir -p -m 0755 /var/empty
-          groupadd sshd
-          useradd -g sshd -c 'sshd privsep' -d /var/empty -s /bin/false sshd
-      -
-        name: fetch openssh repo
-        uses: actions/checkout@v4
-      -
-        name: download oqs-openssh
-        uses: actions/download-artifact@v4
-        with:
-          name: oqs-openssh
-          path: oqs-test/tmp
-      -
-        name: set executable permissions
-        run: |
-          for bin in oqs-test/tmp/bin/* oqs-test/tmp/sbin/*; do
-            sudo chmod +x ${bin}
-          done
-      -
-        name: download build-artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: build-artifacts
-      -
-        name: log build artifacts
-        run: ls -ahl oqs-test/tmp
+#      -
+#        name: upload oqs-openssh
+#        uses: actions/upload-artifact@v4
+#        with:
+#          name: oqs-openssh
+#          path: oqs-test/tmp
+#      -
+#        name: upload build-artifacts
+#        uses: actions/upload-artifact@v4
+#        with:
+#          name: build-artifacts
+#          path: |
+#            config.h
+#            Makefile
+#            openbsd-compat/Makefile
+#            oqs
+#  test:
+#    needs: build
+#    runs-on: ubuntu-latest
+#    container:
+#      image: openquantumsafe/ci-ubuntu-focal-x86_64:latest
+#      ports:
+#        - 4242:4242
+#    steps:
+#      -
+#        name: ssh environment
+#        run: |
+#          mkdir -p -m 0755 /var/empty
+#          groupadd sshd
+#          useradd -g sshd -c 'sshd privsep' -d /var/empty -s /bin/false sshd
+#      -
+#        name: fetch openssh repo
+#        uses: actions/checkout@v4
+#      -
+#        name: download oqs-openssh
+#        uses: actions/download-artifact@v4
+#        with:
+#          name: oqs-openssh
+#          path: oqs-test/tmp
+#      -
+#        name: set executable permissions
+#        run: |
+#          for bin in oqs-test/tmp/bin/* oqs-test/tmp/sbin/*; do
+#            sudo chmod +x ${bin}
+#          done
+#      -
+#        name: download build-artifacts
+#        uses: actions/download-artifact@v4
+#        with:
+#          name: build-artifacts
+#      -
+#        name: log build artifacts
+#        run: ls -ahl oqs-test/tmp
       -
         name: test
         run: oqs-test/run_tests.sh

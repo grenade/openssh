@@ -9,6 +9,7 @@
       - autoconf
       - automake
       - cmake
+      - diff
       - gcc
       - git
       - libtool
@@ -26,6 +27,7 @@
       - autoconf
       - automake
       - cmake
+      - diff
       - gcc
       - git
       - libtool

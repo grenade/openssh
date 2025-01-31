@@ -52,12 +52,26 @@ jobs:
           PREFIX: /usr/local
         run: ./oqs-scripts/build_liboqs.sh
       -
-        name: make build (openssh)
+        name: configure build (create openssh makefile)
         env:
-          INSTALL_PREFIX: /usr/local
-          WITH_OPENSSL: true
+          PREFIX: /usr/local
         run: |
-          ./oqs-scripts/build_openssh.sh
+          if [ "${{ matrix.container.name }}" = "fedora" ]; then
+            export LD_LIB=${PREFIX}/lib64
+          else
+            export LD_LIB=${PREFIX}/lib
+          fi
+          ./configure \
+            --prefix=${PREFIX} \
+            --with-ldflags="-Wl,-rpath -Wl,${LD_LIB}" \
+            --with-libs=-lm \
+            --with-ssl-dir=/usr \
+            --with-liboqs-dir="${PREFIX}" \
+            --with-cflags="-Wno-implicit-function-declaration \
+            -I${PREFIX}/include" \
+            --sysconfdir="${PREFIX}"
+          make -j
+          make install
           echo "oqs openssh has been installed to /usr/local which means that user invocations of ssh"
           echo "commands will use oqs binaries rather than default distro package manager binaries."
           echo "ie: calling 'ssh' (without a path prefix) will invoke the oqs binary at '/usr/local/bin/ssh'"

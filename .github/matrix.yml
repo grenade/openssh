@@ -1,6 +1,6 @@
 ---
 -
-  enabled: false
+  enabled: true
   name: fedora
   tag: 41
   package:
@@ -26,6 +26,7 @@
       - automake
       - cmake
       - gcc
+      - git
       - libtool
       - libssl-dev
       - make

@@ -61,6 +61,7 @@ jobs:
           else
             export LD_LIB=${PREFIX}/lib
           fi
+          autoreconf -i
           ./configure \
             --prefix=${PREFIX} \
             --with-ldflags="-Wl,-rpath -Wl,${LD_LIB}" \

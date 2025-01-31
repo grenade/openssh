@@ -11,7 +11,7 @@ jobs:
     steps:
       -
         name: dependencies
-        run: sudo pip install yq
+        run: pip install yq
       -
         name: fetch openssh repo
         uses: actions/checkout@v4
@@ -31,13 +31,13 @@ jobs:
     steps:
       -
         name: install build dependencies
-        run: sudo ${{ matrix.container.package.manager }} install -y ${{ matrix.container.package.list }}
+        run: ${{ matrix.container.package.manager }} install -y ${{ matrix.container.package.list }}
       -
         name: ssh environment
         run: |
-          [ -d /var/empty ] || sudo mkdir -p -m 0755 /var/empty
-          getent group sshd > /dev/null || sudo groupadd sshd
-          id sshd || sudo useradd -g sshd -c 'sshd privsep' -d /var/empty -s /bin/false sshd
+          [ -d /var/empty ] || mkdir -p -m 0755 /var/empty
+          getent group sshd > /dev/null || groupadd sshd
+          id sshd || useradd -g sshd -c 'sshd privsep' -d /var/empty -s /bin/false sshd
       -
         name: fetch openssh repo
         uses: actions/checkout@v4
@@ -53,9 +53,6 @@ jobs:
           INSTALL_PREFIX: /usr/local
           WITH_OPENSSL: true
         run: |
-          sed -i \
-            -e 's/make install/sudo make install/' \
-            ./oqs-scripts/build_openssh.sh
           ./oqs-scripts/build_openssh.sh
           echo "oqs openssh has been installed to /usr/local which means that user invocations of ssh"
           echo "commands will use oqs binaries rather than default distro package manager binaries."
@@ -65,16 +62,16 @@ jobs:
         name: deploy openssh config
         run: |
           # backup ssh config, replace ssh config
-          [ -f /etc/ssh/ssh_config ] && sudo mv /etc/ssh/ssh_config /etc/ssh/ssh_config_$(date --utc +%Y-%m-%dT%H:%M:%SZ)
-          sudo cp /usr/local/ssh_config /etc/ssh/ssh_config
+          [ -f /etc/ssh/ssh_config ] && mv /etc/ssh/ssh_config /etc/ssh/ssh_config_$(date --utc +%Y-%m-%dT%H:%M:%SZ)
+          cp /usr/local/ssh_config /etc/ssh/ssh_config
 
           # backup sshd config, replace sshd config
-          [ -f /etc/ssh/sshd_config ] && sudo mv /etc/ssh/sshd_config /etc/ssh/sshd_config_$(date --utc +%Y-%m-%dT%H:%M:%SZ)
-          sudo cp /usr/local/sshd_config /etc/ssh/sshd_config
+          [ -f /etc/ssh/sshd_config ] && mv /etc/ssh/sshd_config /etc/ssh/sshd_config_$(date --utc +%Y-%m-%dT%H:%M:%SZ)
+          cp /usr/local/sshd_config /etc/ssh/sshd_config
 
           # backup ssh config, replace ssh config
-          [ -f /etc/ssh/moduli ] && sudo mv /etc/ssh/moduli /etc/ssh/moduli_$(date --utc +%Y-%m-%dT%H:%M:%SZ)
-          sudo cp /usr/local/moduli /etc/ssh/moduli
+          [ -f /etc/ssh/moduli ] && mv /etc/ssh/moduli /etc/ssh/moduli_$(date --utc +%Y-%m-%dT%H:%M:%SZ)
+          cp /usr/local/moduli /etc/ssh/moduli
       -
         name: make clean (openssh)
         run: make clean

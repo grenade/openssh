@@ -31,7 +31,9 @@ jobs:
     steps:
       -
         name: install build dependencies
-        run: ${{ matrix.container.package.manager }} install -y ${{ matrix.container.package.list }}
+        run: |
+          ${{ matrix.container.package.manager }} update -y
+          ${{ matrix.container.package.manager }} install -y ${{ matrix.container.package.list }}
       -
         name: ssh environment
         run: |

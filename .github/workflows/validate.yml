@@ -4,28 +4,41 @@ on:
 permissions:
   contents: write
 jobs:
-  build:
+  matrix:
     runs-on: ubuntu-latest
-    container:
-      # https://github.com/open-quantum-safe/ci-containers/blob/main/ubuntu-latest/Dockerfile
-      image: openquantumsafe/ci-ubuntu-focal-x86_64:latest
+    outputs:
+      containers: ${{ steps.define.outputs.containers }}
     steps:
-      # dependency installations and (sudo) ssh environment below required for vanilla ubuntu (without oqs container)
-      #-
-      #  name: install build dependencies
-      #  run: sudo apt-get install -y autoconf automake cmake gcc libtool libssl-dev make ninja-build zlib1g-dev
-      #-
-      #  name: ssh environment
-      #  run: |
-      #    sudo mkdir -p -m 0755 /var/empty
-      #    sudo groupadd sshd
-      #    id sshd || sudo useradd -g sshd -c 'sshd privsep' -d /var/empty -s /bin/false sshd
+      -
+        name: dependencies
+        run: |
+          sudo apt-get install -y \
+            jq \
+            pip
+          sudo pip install yq
+      -
+        name: define outputs
+        id: define
+        run: |
+          echo "containers=$(yq --compact-output '[.[] | select(.enabled == true) | { name: .name, tag: .tag, package: { manager: .package.manager, list: (.package.list | join(\" \")) } }]' .github/matrix.yml)" >> "$GITHUB_OUTPUT"
+  ci:
+    runs-on: ubuntu-latest
+    needs:
+      - matrix
+    strategy:
+      matrix:
+        container: ${{ fromJSON(needs.matrix.outputs.containers) }}
+    container: ${{ matrix.container.name }}:${{ matrix.container.tag }}
+    steps:
+      -
+        name: install build dependencies
+        run: sudo ${{ matrix.container.package.manager }} install -y ${{ matrix.container.package.list }}
       -
         name: ssh environment
         run: |
-          mkdir -p -m 0755 /var/empty
-          groupadd sshd
-          useradd -g sshd -c 'sshd privsep' -d /var/empty -s /bin/false sshd
+          [ -d /var/empty ] || sudo mkdir -p -m 0755 /var/empty
+          getent group sshd > /dev/null || sudo groupadd sshd
+          id sshd || sudo useradd -g sshd -c 'sshd privsep' -d /var/empty -s /bin/false sshd
       -
         name: fetch openssh repo
         uses: actions/checkout@v4
@@ -33,73 +46,80 @@ jobs:
         name: fetch liboqs repo
         run: ./oqs-scripts/clone_liboqs.sh
       -
-        name: build liboqs
+        name: make build (liboqs)
         run: ./oqs-scripts/build_liboqs.sh
       -
-        name: build openssh
+        name: make build (openssh)
         env:
+          INSTALL_PREFIX: /usr/local
           WITH_OPENSSL: true
-        run: ./oqs-scripts/build_openssh.sh
+        run: |
+          sed -i \
+            -e 's/make install/sudo make install/' \
+            ./oqs-scripts/build_openssh.sh
+          ./oqs-scripts/build_openssh.sh
+          echo "oqs openssh has been installed to /usr/local which means that user invocations of ssh"
+          echo "commands will use oqs binaries rather than default distro package manager binaries."
+          echo "ie: calling 'ssh' (without a path prefix) will invoke the oqs binary at '/usr/local/bin/ssh'"
+          echo "rather than the distro binary at '/usr/bin/ssh'."
       -
-        name: log build artifacts
-        run: ls -ahl oqs-test/tmp
-#      -
-#        name: upload oqs-openssh
-#        uses: actions/upload-artifact@v4
-#        with:
-#          name: oqs-openssh
-#          path: oqs-test/tmp
-#      -
-#        name: upload build-artifacts
-#        uses: actions/upload-artifact@v4
-#        with:
-#          name: build-artifacts
-#          path: |
-#            config.h
-#            Makefile
-#            openbsd-compat/Makefile
-#            oqs
-#  test:
-#    needs: build
-#    runs-on: ubuntu-latest
-#    container:
-#      image: openquantumsafe/ci-ubuntu-focal-x86_64:latest
-#      ports:
-#        - 4242:4242
-#    steps:
-#      -
-#        name: ssh environment
-#        run: |
-#          mkdir -p -m 0755 /var/empty
-#          groupadd sshd
-#          useradd -g sshd -c 'sshd privsep' -d /var/empty -s /bin/false sshd
-#      -
-#        name: fetch openssh repo
-#        uses: actions/checkout@v4
-#      -
-#        name: download oqs-openssh
-#        uses: actions/download-artifact@v4
-#        with:
-#          name: oqs-openssh
-#          path: oqs-test/tmp
-#      -
-#        name: set executable permissions
-#        run: |
-#          for bin in oqs-test/tmp/bin/* oqs-test/tmp/sbin/*; do
-#            sudo chmod +x ${bin}
-#          done
-#      -
-#        name: download build-artifacts
-#        uses: actions/download-artifact@v4
-#        with:
-#          name: build-artifacts
-#      -
-#        name: log build artifacts
-#        run: ls -ahl oqs-test/tmp
+        name: deploy openssh config
+        run: |
+          # backup ssh config, replace ssh config
+          [ -f /etc/ssh/ssh_config ] && sudo mv /etc/ssh/ssh_config /etc/ssh/ssh_config_$(date --utc +%Y-%m-%dT%H:%M:%SZ)
+          sudo cp /usr/local/ssh_config /etc/ssh/ssh_config
+
+          # backup sshd config, replace sshd config
+          [ -f /etc/ssh/sshd_config ] && sudo mv /etc/ssh/sshd_config /etc/ssh/sshd_config_$(date --utc +%Y-%m-%dT%H:%M:%SZ)
+          sudo cp /usr/local/sshd_config /etc/ssh/sshd_config
+
+          # backup ssh config, replace ssh config
+          [ -f /etc/ssh/moduli ] && sudo mv /etc/ssh/moduli /etc/ssh/moduli_$(date --utc +%Y-%m-%dT%H:%M:%SZ)
+          sudo cp /usr/local/moduli /etc/ssh/moduli
       -
-        name: test
+        name: make clean (openssh)
+        run: make clean
+      -
+        name: unit tests
         run: oqs-test/run_tests.sh
       -
-        name: validate algorithms
-        #run: python3 oqs-test/try_connection.py --ssh oqs-test/tmp/bin/ssh --sshd oqs-test/tmp/sbin/sshd doone
-        run: python3 oqs-test/try_connection.py doone
+        name: integration tests (kex/sig handshake)
+        run: python3 oqs-test/try_connection.py --ssh /usr/local/bin/ssh --sshd /usr/local/sbin/sshd doone
+      -
+        name: upload oqs-openssh
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.container.name }}-${{ matrix.container.tag }}-oqs-openssh
+          path: |
+            /etc/ssh/moduli
+            /etc/ssh/ssh_config
+            /etc/ssh/sshd_config
+            /usr/local/bin/scp
+            /usr/local/bin/sftp
+            /usr/local/bin/ssh
+            /usr/local/bin/ssh-add
+            /usr/local/bin/ssh-agent
+            /usr/local/bin/ssh-keygen
+            /usr/local/bin/ssh-keyscan
+            /usr/local/sbin/sshd
+            /usr/local/lib/liboqs.so.0.12.1-dev
+            /usr/local/lib/liboqs.so.7
+            /usr/local/libexec/sftp-server
+            /usr/local/libexec/ssh-keysign
+            /usr/local/libexec/ssh-pkcs11-helper
+            /usr/local/libexec/ssh-sk-helper
+            /usr/local/share/man/man1/scp.1
+            /usr/local/share/man/man1/sftp.1
+            /usr/local/share/man/man1/ssh-add.1
+            /usr/local/share/man/man1/ssh-agent.1
+            /usr/local/share/man/man1/ssh-keygen.1
+            /usr/local/share/man/man1/ssh-keyscan.1
+            /usr/local/share/man/man1/ssh.1
+            /usr/local/share/man/man5/moduli.5
+            /usr/local/share/man/man5/ssh_config.5
+            /usr/local/share/man/man5/sshd_config.5
+            /usr/local/share/man/man8/sftp-server.8
+            /usr/local/share/man/man8/ssh-keysign.8
+            /usr/local/share/man/man8/ssh-pkcs11-helper.8
+            /usr/local/share/man/man8/ssh-sk-helper.8
+            /usr/local/share/man/man8/sshd.8

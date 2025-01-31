@@ -1,0 +1,33 @@
+---
+-
+  enabled: false
+  name: fedora
+  tag: 41
+  package:
+    manager: dnf
+    list:
+      - autoconf
+      - automake
+      - cmake
+      - gcc
+      - libtool
+      - make
+      - ninja-build
+      - openssl-devel
+      - zlib-devel
+-
+  enabled: true
+  name: ubuntu
+  tag: 24.04
+  package:
+    manager: apt-get
+    list:
+      - autoconf
+      - automake
+      - cmake
+      - gcc
+      - libtool
+      - libssl-dev
+      - make
+      - ninja-build
+      - zlib1g-dev

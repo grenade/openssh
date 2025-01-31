@@ -9,7 +9,7 @@
       - autoconf
       - automake
       - cmake
-      - diff
+      - diffutils
       - gcc
       - git
       - libtool

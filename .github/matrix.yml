@@ -16,6 +16,7 @@
       - make
       - ninja-build
       - openssl-devel
+      - python3
       - zlib-devel
 -
   enabled: true
@@ -34,4 +35,5 @@
       - libssl-dev
       - make
       - ninja-build
+      - python3
       - zlib1g-dev

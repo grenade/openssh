@@ -20,7 +20,7 @@ jobs:
         name: define outputs
         id: define
         run: |
-          echo "containers=$(yq --compact-output '[.[] | select(.enabled == true) | { name: .name, tag: .tag, package: { manager: .package.manager, list: (.package.list | join(\" \")) } }]' .github/matrix.yml)" >> "$GITHUB_OUTPUT"
+          echo "containers=$(yq --compact-output '[.[] | select(.enabled == true) | { name: .name, tag: .tag, package: { manager: .package.manager, list: (.package.list | join(\" \")) } }]' ./.github/matrix.yml)" >> "$GITHUB_OUTPUT"
   ci:
     runs-on: ubuntu-latest
     needs:

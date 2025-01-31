@@ -48,6 +48,8 @@ jobs:
         run: ./oqs-scripts/clone_liboqs.sh
       -
         name: make build (liboqs)
+        env:
+          PREFIX: /usr/local
         run: ./oqs-scripts/build_liboqs.sh
       -
         name: make build (openssh)
